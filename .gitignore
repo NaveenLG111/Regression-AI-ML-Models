@@ -2,3 +2,21 @@
 *large*.csv
 Amazon Product and Google Location Review/*.pkl
 Amazon Product and Google Location Review/*.csv
+# Node dependencies & builds
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+build/
+dist/
+
+# Virtual Environments & Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Environment files
+.env*.local
+.env

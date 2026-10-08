@@ -1,4 +1,3 @@
-
 import os
 import pandas as pd
 import numpy as np
@@ -17,15 +16,33 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.chart import ScatterChart, BarChart, Reference, Series
 
-
 class ExcelWriterML:
-    def __init__(self, file_path, output_excel='ml_model_report.xlsx', output_dir='plots', target=None, test_size=0.2, random_state=42):
-        self.file_path = file_path
-        self.output_excel = output_excel
-        self.output_dir = output_dir
+    def __init__(
+        self,
+        data_file='paddydataset.csv',
+        data_dir='Data',
+        output_dir='Output',
+        plots_dir='Plots',
+        output_excel_name='ml_model_report.xlsx',
+        target=None,
+        test_size=0.2,
+        random_state=42
+    ):
+        # Base folder where paddypred.py lives
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Resolve paths relative to the script's location
+        self.data_dir = os.path.join(base_dir, data_dir)
+        self.output_dir = os.path.join(base_dir, output_dir)
+        self.plots_dir = os.path.join(base_dir, plots_dir)
+
+        self.file_path = os.path.join(self.data_dir, data_file)
+        self.output_excel = os.path.join(self.output_dir, output_excel_name)
+
         self.target = target
         self.test_size = test_size
         self.random_state = random_state
+
         self.df = None
         self.X = None
         self.y = None
@@ -46,6 +63,9 @@ class ExcelWriterML:
         self.feature_importance_df = None
         self.numeric_df = None
         self.plot_files = []
+
+        # Ensure output directories exist inside the script directory
+        os.makedirs(self.plots_dir, exist_ok=True)
         os.makedirs(self.output_dir, exist_ok=True)
         self._init_styles()
 
@@ -61,6 +81,9 @@ class ExcelWriterML:
         self.border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
     def load_data(self):
+        if not os.path.exists(self.file_path):
+            raise FileNotFoundError(f"Input file not found at: {self.file_path}")
+            
         self.df = pd.read_csv(self.file_path)
         if self.target is None:
             priority = ['target', 'label', 'y', 'price', 'cost', 'amount', 'sales', 'yield', 'production']
@@ -131,7 +154,7 @@ class ExcelWriterML:
         sns.set_theme(style='whitegrid')
 
         def save(fig, name):
-            path = os.path.join(self.output_dir, name)
+            path = os.path.join(self.plots_dir, name)
             fig.tight_layout()
             fig.savefig(path, dpi=200, bbox_inches='tight')
             plt.close(fig)
@@ -287,9 +310,11 @@ class ExcelWriterML:
 
 if __name__ == '__main__':
     writer = ExcelWriterML(
-        file_path='paddydataset.csv',
-        output_excel='ml_model_report.xlsx',
-        output_dir='plots',
+        data_file='paddydataset.csv',
+        data_dir='Data',
+        output_dir='Output',
+        plots_dir='Plots',
+        output_excel_name='ml_model_report.xlsx',
         target='Nursery area (Cents)'
     )
     output_file = writer.run()
